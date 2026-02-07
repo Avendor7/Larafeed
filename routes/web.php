@@ -15,11 +15,6 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('dashboard1', [DashboardController::class, 'themeOne'])->name('dashboard1');
-    Route::get('dashboard2', [DashboardController::class, 'themeTwo'])->name('dashboard2');
-    Route::get('dashboard3', [DashboardController::class, 'themeThree'])->name('dashboard3');
-    Route::get('dashboard4', [DashboardController::class, 'themeFour'])->name('dashboard4');
-    Route::get('dashboard5', [DashboardController::class, 'themeFive'])->name('dashboard5');
     Route::post('feeds', [FeedController::class, 'store'])->name('feeds.store');
     Route::post('feeds/{feed}/refresh', [FeedController::class, 'refresh'])->name('feeds.refresh');
     Route::delete('feeds/{feed}', [FeedController::class, 'destroy'])->name('feeds.destroy');

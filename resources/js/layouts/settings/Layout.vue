@@ -51,8 +51,11 @@ const { isCurrentUrl } = useCurrentUrl();
                         :key="toUrl(item.href)"
                         variant="ghost"
                         :class="[
-                            'w-full justify-start',
-                            { 'bg-muted': isCurrentUrl(item.href) },
+                            'w-full justify-start text-neutral-300 hover:text-neutral-100',
+                            {
+                                'bg-fuchsia-500/10 text-neutral-100 hover:text-neutral-100':
+                                    isCurrentUrl(item.href),
+                            },
                         ]"
                         as-child
                     >

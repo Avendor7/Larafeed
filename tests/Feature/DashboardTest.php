@@ -2,24 +2,15 @@
 
 use App\Models\User;
 
-dataset('dashboard-routes', [
-    'dashboard',
-    'dashboard1',
-    'dashboard2',
-    'dashboard3',
-    'dashboard4',
-    'dashboard5',
-]);
-
-test('guests are redirected to the login page', function (string $routeName) {
-    $response = $this->get(route($routeName));
+test('guests are redirected to the login page', function () {
+    $response = $this->get(route('dashboard'));
     $response->assertRedirect(route('login'));
-})->with('dashboard-routes');
+});
 
-test('authenticated users can visit the dashboards', function (string $routeName) {
+test('authenticated users can visit the dashboard', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $response = $this->get(route($routeName));
+    $response = $this->get(route('dashboard'));
     $response->assertOk();
-})->with('dashboard-routes');
+});

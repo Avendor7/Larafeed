@@ -12,36 +12,6 @@ class DashboardController extends Controller
 {
     public function index(Request $request): Response
     {
-        return $this->renderDashboard($request, 'Dashboard');
-    }
-
-    public function themeOne(Request $request): Response
-    {
-        return $this->renderDashboard($request, 'Dashboard1');
-    }
-
-    public function themeTwo(Request $request): Response
-    {
-        return $this->renderDashboard($request, 'Dashboard2');
-    }
-
-    public function themeThree(Request $request): Response
-    {
-        return $this->renderDashboard($request, 'Dashboard3');
-    }
-
-    public function themeFour(Request $request): Response
-    {
-        return $this->renderDashboard($request, 'Dashboard4');
-    }
-
-    public function themeFive(Request $request): Response
-    {
-        return $this->renderDashboard($request, 'Dashboard5');
-    }
-
-    private function renderDashboard(Request $request, string $component): Response
-    {
         $user = $request->user();
 
         $feeds = Feed::query()
@@ -78,7 +48,7 @@ class DashboardController extends Controller
                 ],
             ]);
 
-        return Inertia::render($component, [
+        return Inertia::render('Dashboard', [
             'feeds' => $feeds,
             'items' => $items,
             'status' => $request->session()->get('status'),
