@@ -24,6 +24,7 @@ class FeedItemFactory extends Factory
             'title' => $this->faker->sentence(6),
             'url' => $this->faker->url(),
             'summary' => $this->faker->paragraph(2),
+            'content' => '<p>'.$this->faker->paragraph(4).'</p>',
             'published_at' => $this->faker->dateTimeBetween('-1 week', 'now'),
         ];
     }

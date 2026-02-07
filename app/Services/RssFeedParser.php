@@ -18,6 +18,7 @@ class RssFeedParser
      *         title: string|null,
      *         url: string|null,
      *         summary: string|null,
+     *         content: string|null,
      *         published_at: Carbon|null
      *     }>
      * }
@@ -55,6 +56,7 @@ class RssFeedParser
      *         title: string|null,
      *         url: string|null,
      *         summary: string|null,
+     *         content: string|null,
      *         published_at: Carbon|null
      *     }>
      * }
@@ -68,9 +70,18 @@ class RssFeedParser
         foreach ($channel->item ?? [] as $item) {
             $summary = $this->stringValue($item->description ?? null);
             $contentEncoded = $item->children('content', true);
+            $content = null;
 
-            if ($summary === null && isset($contentEncoded->encoded)) {
-                $summary = $this->stringValue($contentEncoded->encoded);
+            if (isset($contentEncoded->encoded)) {
+                $content = $this->stringValue($contentEncoded->encoded);
+            }
+
+            if ($content === null) {
+                $content = $summary;
+            }
+
+            if ($summary === null) {
+                $summary = $content;
             }
 
             $items[] = [
@@ -78,6 +89,7 @@ class RssFeedParser
                 'title' => $this->stringValue($item->title ?? null),
                 'url' => $this->stringValue($item->link ?? null),
                 'summary' => $summary,
+                'content' => $content,
                 'published_at' => $this->parseDate($this->stringValue($item->pubDate ?? null)),
             ];
         }
@@ -100,6 +112,7 @@ class RssFeedParser
      *         title: string|null,
      *         url: string|null,
      *         summary: string|null,
+     *         content: string|null,
      *         published_at: Carbon|null
      *     }>
      * }
@@ -114,9 +127,14 @@ class RssFeedParser
 
         foreach ($atomFeed->entry ?? [] as $entry) {
             $summary = $this->stringValue($entry->summary ?? null);
+            $content = $this->stringValue($entry->content ?? null);
+
+            if ($content === null) {
+                $content = $summary;
+            }
 
             if ($summary === null) {
-                $summary = $this->stringValue($entry->content ?? null);
+                $summary = $content;
             }
 
             $items[] = [
@@ -124,6 +142,7 @@ class RssFeedParser
                 'title' => $this->stringValue($entry->title ?? null),
                 'url' => $this->extractAtomLink($entry),
                 'summary' => $summary,
+                'content' => $content,
                 'published_at' => $this->parseDate(
                     $this->stringValue($entry->updated ?? $entry->published ?? null)
                 ),

@@ -23,9 +23,7 @@ class FetchFeedItems implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public Feed $feed)
-    {
-    }
+    public function __construct(public Feed $feed) {}
 
     /**
      * Execute the job.
@@ -71,7 +69,7 @@ class FetchFeedItems implements ShouldQueue
                 FeedItem::query()->upsert(
                     $rows,
                     ['feed_id', 'guid'],
-                    ['title', 'url', 'summary', 'published_at', 'updated_at']
+                    ['title', 'url', 'summary', 'content', 'published_at', 'updated_at']
                 );
             }
         });
@@ -83,15 +81,16 @@ class FetchFeedItems implements ShouldQueue
      *     title: string|null,
      *     url: string|null,
      *     summary: string|null,
+     *     content: string|null,
      *     published_at: Carbon|null
      * } $item
-     *
      * @return array{
      *     feed_id: int,
      *     guid: string|null,
      *     title: string|null,
      *     url: string|null,
      *     summary: string|null,
+     *     content: string|null,
      *     published_at: Carbon|null,
      *     created_at: Carbon,
      *     updated_at: Carbon
@@ -117,6 +116,7 @@ class FetchFeedItems implements ShouldQueue
             'title' => $item['title'],
             'url' => $item['url'],
             'summary' => $this->cleanSummary($item['summary']),
+            'content' => $this->cleanContent($item['content']),
             'published_at' => $item['published_at'],
             'created_at' => $timestamp,
             'updated_at' => $timestamp,
@@ -130,6 +130,17 @@ class FetchFeedItems implements ShouldQueue
         }
 
         $cleaned = trim(strip_tags($summary));
+
+        return $cleaned === '' ? null : $cleaned;
+    }
+
+    private function cleanContent(?string $content): ?string
+    {
+        if ($content === null) {
+            return null;
+        }
+
+        $cleaned = trim($content);
 
         return $cleaned === '' ? null : $cleaned;
     }

@@ -4,9 +4,9 @@ use App\Jobs\FetchFeedItems;
 use App\Models\Feed;
 use App\Models\User;
 use App\Services\RssFeedParser;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 
@@ -61,7 +61,7 @@ it('fetches items for a feed', function () {
         'https://example.com/rss.xml' => Http::response(
             <<<'XML'
 <?xml version="1.0"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>Example Feed</title>
         <link>https://example.com</link>
@@ -72,6 +72,7 @@ it('fetches items for a feed', function () {
             <guid>first-1</guid>
             <pubDate>Mon, 01 Jan 2024 10:00:00 +0000</pubDate>
             <description>Summary for first story.</description>
+            <content:encoded><![CDATA[<p>Full story <strong>content</strong>.</p>]]></content:encoded>
         </item>
     </channel>
 </rss>
@@ -87,4 +88,6 @@ XML,
 
     expect($feed->title)->toBe('Example Feed');
     expect($feed->items()->count())->toBe(1);
+    $item = $feed->items()->firstOrFail();
+    expect($item->content)->toBe('<p>Full story <strong>content</strong>.</p>');
 });

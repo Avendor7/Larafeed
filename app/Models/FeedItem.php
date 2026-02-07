@@ -20,6 +20,7 @@ class FeedItem extends Model
         'title',
         'url',
         'summary',
+        'content',
         'published_at',
     ];
 

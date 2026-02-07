@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { RefreshCcw, Rss, Trash2 } from 'lucide-vue-next';
 import FeedController from '@/actions/App/Http/Controllers/FeedController';
 import InputError from '@/components/InputError.vue';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
+import { show as feedItemShow } from '@/routes/feed-items';
 import { type BreadcrumbItem } from '@/types';
 
 type FeedSummary = {
@@ -197,18 +198,12 @@ const formatDate = (value?: string | null) => {
                         <div v-for="item in items" :key="item.id" class="space-y-2">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="space-y-1">
-                                    <a
-                                        v-if="item.url"
-                                        :href="item.url"
+                                    <Link
+                                        :href="feedItemShow(item.id)"
                                         class="text-base font-semibold text-foreground transition-colors hover:text-foreground/80"
-                                        target="_blank"
-                                        rel="noreferrer"
                                     >
                                         {{ item.title ?? 'Untitled story' }}
-                                    </a>
-                                    <p v-else class="text-base font-semibold text-foreground">
-                                        {{ item.title ?? 'Untitled story' }}
-                                    </p>
+                                    </Link>
                                     <p class="text-xs text-muted-foreground">
                                         {{ item.feed.title }}
                                         <span v-if="item.published_at">

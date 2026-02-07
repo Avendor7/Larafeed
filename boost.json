@@ -2,7 +2,9 @@
     "agents": [
         "junie",
         "opencode",
-        "gemini"
+        "gemini",
+        "codex",
+        "cursor"
     ],
     "guidelines": true,
     "herd_mcp": false,
@@ -14,6 +16,8 @@
     "skills": [
         "wayfinder-development",
         "pest-testing",
+        "inertia-vue-development",
+        "tailwindcss-development",
         "developing-with-fortify"
     ]
 }
