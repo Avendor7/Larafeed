@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
-import NavFooter from '@/components/NavFooter.vue';
+import { Bookmark, Clock, LayoutGrid, Rss } from 'lucide-vue-next';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
@@ -23,30 +13,40 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+        title: 'Today',
+        href: `${dashboard().url}#today`,
+        icon: Clock,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Feeds',
+        href: `${dashboard().url}#feeds`,
+        icon: Rss,
+    },
+    {
+        title: 'Bookmarks',
+        href: `${dashboard().url}#bookmarks`,
+        icon: Bookmark,
     },
 ];
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset" class="border-fuchsia-500/10 bg-neutral-950">
+    <Sidebar
+        collapsible="icon"
+        variant="sidebar"
+        class="border-neutral-800 bg-neutral-950 text-neutral-200"
+    >
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="dashboard()">
-                            <AppLogo />
+                            <span
+                                class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-lg font-semibold text-white"
+                            >
+                                R
+                            </span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -58,7 +58,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

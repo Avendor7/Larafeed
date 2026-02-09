@@ -33,6 +33,40 @@ it('shows a feed item to the owning user', function () {
         );
 });
 
+it('marks feed items as read when viewing them', function () {
+    $user = User::factory()->create();
+    $feed = Feed::factory()->for($user)->create();
+    $item = FeedItem::factory()->for($feed)->create([
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('feed-items.show', $item))
+        ->assertOk();
+
+    expect($item->refresh()->read_at)->not->toBeNull();
+});
+
+it('allows a user to toggle bookmarks', function () {
+    $user = User::factory()->create();
+    $feed = Feed::factory()->for($user)->create();
+    $item = FeedItem::factory()->for($feed)->create([
+        'bookmarked_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('feed-items.bookmark', $item))
+        ->assertRedirect();
+
+    expect($item->refresh()->bookmarked_at)->not->toBeNull();
+
+    $this->actingAs($user)
+        ->post(route('feed-items.bookmark', $item))
+        ->assertRedirect();
+
+    expect($item->refresh()->bookmarked_at)->toBeNull();
+});
+
 it('prevents other users from viewing a feed item', function () {
     $owner = User::factory()->create();
     $otherUser = User::factory()->create();
@@ -41,5 +75,16 @@ it('prevents other users from viewing a feed item', function () {
 
     $this->actingAs($otherUser)
         ->get(route('feed-items.show', $item))
+        ->assertForbidden();
+});
+
+it('prevents other users from bookmarking a feed item', function () {
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $feed = Feed::factory()->for($owner)->create();
+    $item = FeedItem::factory()->for($feed)->create();
+
+    $this->actingAs($otherUser)
+        ->post(route('feed-items.bookmark', $item))
         ->assertForbidden();
 });

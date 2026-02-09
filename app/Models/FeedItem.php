@@ -22,6 +22,8 @@ class FeedItem extends Model
         'summary',
         'content',
         'published_at',
+        'read_at',
+        'bookmarked_at',
     ];
 
     public function feed(): BelongsTo
@@ -36,6 +38,8 @@ class FeedItem extends Model
     {
         return [
             'published_at' => 'datetime',
+            'read_at' => 'datetime',
+            'bookmarked_at' => 'datetime',
         ];
     }
 }

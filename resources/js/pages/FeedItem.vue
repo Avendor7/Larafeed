@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, ExternalLink } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
+import { Head, Link, Form } from '@inertiajs/vue3';
+import { ArrowLeft, Bookmark, ExternalLink } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
+import { bookmark as feedItemBookmark } from '@/routes/feed-items';
 import { type BreadcrumbItem } from '@/types';
 
 type FeedItemDetail = {
@@ -13,6 +13,7 @@ type FeedItemDetail = {
     summary?: string | null;
     content?: string | null;
     published_at?: string | null;
+    is_bookmarked: boolean;
     feed: {
         id: number;
         title: string;
@@ -54,47 +55,70 @@ const formatDate = (value?: string | null) => {
     <Head :title="item.title ?? 'Story'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-1 flex-col gap-6 p-4">
-            <div class="rounded-2xl border border-fuchsia-500/20 bg-neutral-950 p-6">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div class="space-y-2">
-                        <Link
-                            :href="dashboard()"
-                            class="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-100"
-                        >
-                            <ArrowLeft class="h-4 w-4" />
-                            Back to dashboard
-                        </Link>
-                        <div class="space-y-1">
-                            <p class="text-xs font-medium uppercase tracking-wide text-fuchsia-300/80">
-                                {{ item.feed.title }}
-                            </p>
-                            <h1 class="text-2xl font-semibold text-neutral-100 md:text-3xl">
-                                {{ item.title ?? 'Untitled story' }}
-                            </h1>
-                            <p v-if="item.published_at" class="text-sm text-neutral-400">
-                                {{ formatDate(item.published_at) }}
-                            </p>
-                        </div>
-                    </div>
+        <template #header-title>
+            <div class="min-w-0">
+                <p class="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                    {{ item.feed.title }}
+                </p>
+                <h1 class="truncate text-lg font-semibold text-neutral-100">
+                    {{ item.title ?? 'Untitled story' }}
+                </h1>
+            </div>
+        </template>
+        <template #header-actions>
+            <Form v-bind="feedItemBookmark.form({ feedItem: item.id })">
+                <button
+                    type="submit"
+                    class="flex h-9 items-center gap-2 rounded-lg border border-neutral-700 px-3 text-sm text-neutral-200 transition hover:border-neutral-600"
+                >
+                    <Bookmark
+                        class="h-4 w-4"
+                        :class="item.is_bookmarked ? 'fill-current text-sky-300' : 'text-neutral-400'"
+                    />
+                    <span class="hidden text-sm md:inline">Bookmark</span>
+                </button>
+            </Form>
+            <a
+                v-if="item.url"
+                :href="item.url"
+                target="_blank"
+                rel="noreferrer"
+                class="flex h-9 items-center gap-2 rounded-lg bg-sky-600 px-3 text-sm font-medium text-white transition hover:bg-sky-500"
+            >
+                <ExternalLink class="h-4 w-4" />
+                <span class="hidden md:inline">Open original</span>
+            </a>
+        </template>
 
-                    <Button v-if="item.url" variant="secondary" as-child>
-                        <a :href="item.url" target="_blank" rel="noreferrer">
-                            <ExternalLink class="mr-2 h-4 w-4" />
-                            Open original
-                        </a>
-                    </Button>
+        <div class="flex flex-1 flex-col gap-6 px-6 py-6">
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+                <div class="space-y-2">
+                    <Link
+                        :href="dashboard()"
+                        class="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 transition hover:text-neutral-100"
+                    >
+                        <ArrowLeft class="h-4 w-4" />
+                        Back to dashboard
+                    </Link>
+                    <div class="space-y-1">
+                        <h2 class="text-2xl font-semibold text-neutral-100 md:text-3xl">
+                            {{ item.title ?? 'Untitled story' }}
+                        </h2>
+                        <p v-if="item.published_at" class="text-sm text-neutral-400">
+                            {{ formatDate(item.published_at) }}
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-fuchsia-500/10 bg-neutral-950/60 p-6">
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
                 <div
                     v-if="item.content"
-                    class="prose prose-invert max-w-none prose-a:text-fuchsia-200 prose-a:no-underline hover:prose-a:text-fuchsia-100"
+                    class="prose prose-invert max-w-none prose-a:text-sky-200 prose-a:no-underline hover:prose-a:text-sky-100"
                     v-html="item.content"
                 ></div>
 
-                <div v-else class="rounded-lg border border-dashed border-fuchsia-500/20 p-6">
+                <div v-else class="rounded-lg border border-dashed border-neutral-700 p-6">
                     <p class="text-sm text-neutral-400">
                         This feed item does not include full content. Showing the summary instead.
                     </p>

@@ -19,6 +19,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('feeds/{feed}/refresh', [FeedController::class, 'refresh'])->name('feeds.refresh');
     Route::delete('feeds/{feed}', [FeedController::class, 'destroy'])->name('feeds.destroy');
     Route::get('feed-items/{feedItem}', [FeedItemController::class, 'show'])->name('feed-items.show');
+    Route::post('feed-items/{feedItem}/bookmark', [FeedItemController::class, 'toggleBookmark'])
+        ->name('feed-items.bookmark');
 });
 
 require __DIR__.'/settings.php';

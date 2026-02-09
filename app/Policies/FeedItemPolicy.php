@@ -40,6 +40,14 @@ class FeedItemPolicy
     }
 
     /**
+     * Determine whether the user can bookmark the model.
+     */
+    public function bookmark(User $user, FeedItem $feedItem): bool
+    {
+        return $feedItem->feed()->where('user_id', $user->id)->exists();
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, FeedItem $feedItem): bool
