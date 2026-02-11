@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { Bookmark, Search } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import FeedController from '@/actions/App/Http/Controllers/FeedController';
 import InputError from '@/components/InputError.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -58,16 +58,19 @@ type DashboardStats = {
 type Props = {
     feeds: FeedSummary[];
     items: FeedItemSummary[];
-    todayItems: FeedItemSummary[];
     bookmarks: BookmarkSummary[];
     stats: DashboardStats;
     status?: string | null;
     search?: string;
+    filter?: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
     search: '',
+    filter: 'today',
 });
+
+const isAddFeedOpen = ref(false);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -126,7 +129,25 @@ const totalItemsLabel = computed(() => props.stats.new_this_week > 0
     : 'No new stories this week');
 
 const isSearching = computed(() => props.search.trim().length > 0);
-const primaryItems = computed(() => (isSearching.value ? props.items : props.todayItems));
+const activeFilter = computed(() => (isSearching.value ? 'search' : props.filter));
+const filterLabel = computed(() => {
+    switch (activeFilter.value) {
+        case 'bookmarks':
+            return 'Bookmarked';
+        case 'all':
+            return 'All stories';
+        case 'search':
+            return 'Search results';
+        default:
+            return 'Today';
+    }
+});
+
+const filterLinks = computed(() => [
+    { label: 'Today', value: 'today' },
+    { label: 'All', value: 'all' },
+    { label: 'Bookmarks', value: 'bookmarks' },
+]);
 </script>
 
 <template>
@@ -134,7 +155,7 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <template #header-title>
-            <h1 class="text-lg font-semibold text-neutral-100">Dashboard</h1>
+            <h1 class="text-lg font-semibold text-foreground">Dashboard</h1>
         </template>
         <template #header-actions>
             <Form
@@ -142,16 +163,16 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                 method="get"
                 class="relative hidden items-center md:flex"
             >
-                <Search class="absolute left-3 h-4 w-4 text-neutral-500" />
+                <Search class="absolute left-3 h-4 w-4 text-muted-foreground" />
                 <input
                     name="search"
                     :value="search"
                     type="search"
                     placeholder="Search feeds..."
-                    class="w-64 rounded-lg border border-neutral-700 bg-neutral-800 px-9 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-sky-500 focus:outline-none"
+                    class="w-64 rounded-lg border border-border bg-background px-9 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-sky-500 focus:outline-none"
                 />
             </Form>
-            <Dialog>
+            <Dialog v-model:open="isAddFeedOpen">
                 <DialogTrigger as-child>
                     <button
                         type="button"
@@ -160,20 +181,27 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                         + Add Feed
                     </button>
                 </DialogTrigger>
-                <DialogContent class="border border-neutral-800 bg-neutral-900 text-neutral-100 sm:max-w-md">
+                <DialogContent class="border border-border bg-card text-foreground sm:max-w-md">
                     <DialogHeader class="space-y-2">
                         <DialogTitle class="text-lg">Add a feed</DialogTitle>
-                        <DialogDescription class="text-sm text-neutral-400">
+                        <DialogDescription class="text-sm text-muted-foreground">
                             Paste an RSS or Atom feed URL to start collecting stories.
                         </DialogDescription>
                     </DialogHeader>
                     <Form
                         v-bind="FeedController.store.form()"
+                        :options="{
+                            preserveScroll: true,
+                            onSuccess: () => {
+                                isAddFeedOpen = false;
+                            },
+                        }"
+                        reset-on-success
                         class="space-y-4"
                         v-slot="{ errors, processing }"
                     >
                         <div class="space-y-2">
-                            <label for="url" class="text-sm font-medium text-neutral-300">
+                            <label for="url" class="text-sm font-medium text-muted-foreground">
                                 Feed URL
                             </label>
                             <input
@@ -182,7 +210,7 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                                 type="url"
                                 placeholder="https://example.com/rss.xml"
                                 required
-                                class="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-sky-500 focus:outline-none"
+                                class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-sky-500 focus:outline-none"
                             />
                             <InputError :message="errors.url" />
                             <InputError :message="errors.url_hash" />
@@ -204,45 +232,45 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
         <div class="flex flex-1 flex-col gap-6 px-6 py-6">
             <div
                 v-if="status"
-                class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
+                class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600 dark:text-emerald-200"
             >
                 {{ status }}
             </div>
 
             <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="stats">
-                <div class="rounded-xl border border-neutral-800 bg-neutral-800/40 p-4">
-                    <div class="text-sm text-neutral-400">Total Articles</div>
-                    <div class="mt-1 text-2xl font-semibold text-neutral-100">
+                <div class="rounded-xl border border-border bg-card/70 p-4">
+                    <div class="text-sm text-muted-foreground">Total Articles</div>
+                    <div class="mt-1 text-2xl font-semibold text-foreground">
                         {{ stats.total_articles.toLocaleString() }}
                     </div>
-                    <div class="mt-1 text-xs text-emerald-400">
+                    <div class="mt-1 text-xs text-emerald-500 dark:text-emerald-400">
                         {{ totalItemsLabel }}
                     </div>
                 </div>
-                <div class="rounded-xl border border-neutral-800 bg-neutral-800/40 p-4">
-                    <div class="text-sm text-neutral-400">Unread</div>
-                    <div class="mt-1 text-2xl font-semibold text-neutral-100">
+                <div class="rounded-xl border border-border bg-card/70 p-4">
+                    <div class="text-sm text-muted-foreground">Unread</div>
+                    <div class="mt-1 text-2xl font-semibold text-foreground">
                         {{ stats.unread.toLocaleString() }}
                     </div>
-                    <div class="mt-1 text-xs text-amber-400">
+                    <div class="mt-1 text-xs text-amber-500 dark:text-amber-400">
                         {{ stats.unread_priority }} high priority
                     </div>
                 </div>
-                <div class="rounded-xl border border-neutral-800 bg-neutral-800/40 p-4">
-                    <div class="text-sm text-neutral-400">Bookmarked</div>
-                    <div class="mt-1 text-2xl font-semibold text-neutral-100">
+                <div class="rounded-xl border border-border bg-card/70 p-4">
+                    <div class="text-sm text-muted-foreground">Bookmarked</div>
+                    <div class="mt-1 text-2xl font-semibold text-foreground">
                         {{ stats.bookmarked.toLocaleString() }}
                     </div>
-                    <div class="mt-1 text-xs text-neutral-500">
+                    <div class="mt-1 text-xs text-muted-foreground">
                         {{ stats.bookmarked_today }} added today
                     </div>
                 </div>
-                <div class="rounded-xl border border-neutral-800 bg-neutral-800/40 p-4">
-                    <div class="text-sm text-neutral-400">Active Feeds</div>
-                    <div class="mt-1 text-2xl font-semibold text-neutral-100">
+                <div class="rounded-xl border border-border bg-card/70 p-4">
+                    <div class="text-sm text-muted-foreground">Active Feeds</div>
+                    <div class="mt-1 text-2xl font-semibold text-foreground">
                         {{ stats.active_feeds.toLocaleString() }}
                     </div>
-                    <div class="mt-1 text-xs text-neutral-500">
+                    <div class="mt-1 text-xs text-muted-foreground">
                         {{ stats.failing_feeds }} failing
                     </div>
                 </div>
@@ -251,32 +279,37 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
             <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div class="space-y-4" id="today">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-base font-semibold text-neutral-100">
-                            {{ isSearching ? 'Search results' : 'Today' }}
+                        <h2 class="text-base font-semibold text-foreground">
+                            {{ filterLabel }}
                         </h2>
-                        <Link
-                            v-if="!isSearching"
-                            :href="dashboard()"
-                            class="text-sm text-neutral-500 transition hover:text-neutral-300"
-                        >
-                            View all
-                        </Link>
+                        <div class="flex items-center gap-2 text-xs">
+                            <Link
+                                v-for="link in filterLinks"
+                                :key="link.value"
+                                :href="dashboard({ query: { filter: link.value } })"
+                                class="rounded-full border border-border px-3 py-1 text-muted-foreground transition hover:text-foreground"
+                                :class="activeFilter === link.value ? 'border-sky-500/40 text-foreground' : ''"
+                            >
+                                {{ link.label }}
+                            </Link>
+                        </div>
                     </div>
 
                     <div
-                        v-if="primaryItems.length === 0"
-                        class="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/60 p-4 text-sm text-neutral-400"
+                        v-if="items.length === 0"
+                        class="rounded-xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground"
                     >
-                        {{ isSearching
-                            ? 'No stories match that search yet.'
-                            : 'No stories yet today. Check back after your next feed refresh.' }}
+                        <span v-if="activeFilter === 'bookmarks'">No bookmarks yet.</span>
+                        <span v-else-if="activeFilter === 'all'">No stories yet. Add a feed to get started.</span>
+                        <span v-else-if="activeFilter === 'search'">No stories match that search yet.</span>
+                        <span v-else>No stories yet today. Check back after your next feed refresh.</span>
                     </div>
 
                     <div v-else class="space-y-3">
                         <article
-                            v-for="(item, index) in primaryItems"
+                            v-for="(item, index) in items"
                             :key="item.id"
-                            class="rounded-xl border border-neutral-800 bg-neutral-800/20 p-4 transition hover:border-neutral-700"
+                            class="rounded-xl border border-border bg-card/60 p-4 transition hover:border-border/70"
                         >
                             <div class="flex gap-4">
                                 <div
@@ -289,27 +322,27 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                                     <div class="flex items-start justify-between gap-2">
                                         <Link
                                             :href="feedItemShow(item.id)"
-                                            class="truncate font-medium text-neutral-100 transition hover:text-white"
+                                            class="truncate font-medium text-foreground transition hover:text-foreground/80"
                                         >
                                             {{ item.title ?? 'Untitled story' }}
                                         </Link>
-                                        <span class="text-xs text-neutral-500">
+                                        <span class="text-xs text-muted-foreground">
                                             {{ formatRelativeTime(item.published_at) ?? 'Now' }}
                                         </span>
                                     </div>
                                     <p
                                         v-if="item.summary"
-                                        class="mt-1 line-clamp-1 text-sm text-neutral-400"
+                                        class="mt-1 line-clamp-1 text-sm text-muted-foreground"
                                     >
                                         {{ item.summary }}
                                     </p>
                                     <div class="mt-2 flex items-center gap-2">
-                                        <span class="rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-300">
+                                        <span class="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                                             {{ item.feed.title }}
                                         </span>
                                         <span
                                             v-if="item.is_bookmarked"
-                                            class="rounded bg-sky-900/50 px-2 py-0.5 text-xs text-sky-300"
+                                            class="rounded bg-sky-500/10 px-2 py-0.5 text-xs text-sky-700 dark:bg-sky-900/50 dark:text-sky-300"
                                         >
                                             Bookmarked
                                         </span>
@@ -321,8 +354,8 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                                 >
                                     <button
                                         type="submit"
-                                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-800 text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
-                                        :class="item.is_bookmarked ? 'text-sky-300' : ''"
+                                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-border/70 hover:text-foreground"
+                                        :class="item.is_bookmarked ? 'text-sky-400' : ''"
                                         aria-label="Toggle bookmark"
                                     >
                                         <Bookmark
@@ -337,8 +370,8 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                 </div>
 
                 <div class="space-y-6">
-                    <div class="rounded-xl border border-neutral-800 bg-neutral-800/20 p-4" id="feeds">
-                        <h3 class="mb-3 text-sm font-semibold text-neutral-100">Feeds</h3>
+                    <div class="rounded-xl border border-border bg-card/60 p-4" id="feeds">
+                        <h3 class="mb-3 text-sm font-semibold text-foreground">Feeds</h3>
                         <div class="space-y-2">
                             <a
                                 v-for="feed in feeds"
@@ -346,23 +379,23 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                                 :href="feed.site_url ?? feed.url"
                                 target="_blank"
                                 rel="noreferrer"
-                                class="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800/60"
+                                class="flex items-center justify-between rounded-lg px-2 py-2 text-sm text-foreground transition hover:bg-muted/70"
                             >
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded bg-neutral-800 text-xs font-semibold text-neutral-300">
+                                    <div class="flex h-8 w-8 items-center justify-center rounded bg-muted text-xs font-semibold text-muted-foreground">
                                         {{ feed.title.slice(0, 2).toUpperCase() }}
                                     </div>
                                     <span class="truncate">{{ feed.title }}</span>
                                 </div>
                                 <span
-                                    class="rounded-full bg-neutral-700 px-2 py-0.5 text-xs text-neutral-200"
+                                    class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                                 >
                                     {{ feed.unread_count }}
                                 </span>
                             </a>
                             <div
                                 v-if="feeds.length === 0"
-                                class="rounded-lg border border-dashed border-neutral-700 bg-neutral-900/60 p-3 text-xs text-neutral-500"
+                                class="rounded-lg border border-dashed border-border bg-card/60 p-3 text-xs text-muted-foreground"
                             >
                                 Add a feed to start tracking new items.
                             </div>
@@ -370,10 +403,10 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                     </div>
 
                     <div
-                        class="rounded-xl border border-neutral-800 bg-neutral-800/20 p-4"
+                        class="rounded-xl border border-border bg-card/60 p-4"
                         id="bookmarks"
                     >
-                        <h3 class="mb-3 text-sm font-semibold text-neutral-100">
+                        <h3 class="mb-3 text-sm font-semibold text-foreground">
                             Recent Bookmarks
                         </h3>
                         <div class="space-y-3">
@@ -381,12 +414,12 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                                 v-for="bookmark in bookmarks"
                                 :key="bookmark.id"
                                 :href="feedItemShow(bookmark.id)"
-                                class="block rounded-lg px-2 py-2 transition hover:bg-neutral-800/60"
+                                class="block rounded-lg px-2 py-2 transition hover:bg-muted/70"
                             >
-                                <div class="text-sm font-medium text-neutral-100 line-clamp-1">
+                                <div class="text-sm font-medium text-foreground line-clamp-1">
                                     {{ bookmark.title ?? 'Untitled story' }}
                                 </div>
-                                <div class="mt-1 text-xs text-neutral-500">
+                                <div class="mt-1 text-xs text-muted-foreground">
                                     {{ bookmark.feed.title }}
                                     <span v-if="bookmark.published_at">
                                         · {{ formatDate(bookmark.published_at) }}
@@ -395,7 +428,7 @@ const primaryItems = computed(() => (isSearching.value ? props.items : props.tod
                             </Link>
                             <div
                                 v-if="bookmarks.length === 0"
-                                class="rounded-lg border border-dashed border-neutral-700 bg-neutral-900/60 p-3 text-xs text-neutral-500"
+                                class="rounded-lg border border-dashed border-border bg-card/60 p-3 text-xs text-muted-foreground"
                             >
                                 Save stories to see them here.
                             </div>

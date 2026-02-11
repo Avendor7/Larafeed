@@ -32,7 +32,7 @@ test('dashboard stats and bookmarks reflect user data', function () {
     ]);
 
     $priorityItem = FeedItem::factory()->for($feed)->create([
-        'published_at' => now()->subHours(2),
+        'published_at' => now()->startOfDay()->addHour(),
         'read_at' => null,
     ]);
 
@@ -57,6 +57,7 @@ test('dashboard stats and bookmarks reflect user data', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Dashboard')
+            ->where('filter', 'today')
             ->where('stats.total_articles', 4)
             ->where('stats.new_this_week', 3)
             ->where('stats.unread', 2)
@@ -65,8 +66,29 @@ test('dashboard stats and bookmarks reflect user data', function () {
             ->where('stats.bookmarked_today', 1)
             ->where('stats.active_feeds', 1)
             ->where('stats.failing_feeds', 0)
-            ->where('todayItems.0.id', $priorityItem->id)
             ->where('bookmarks.0.id', $bookmarkedItem->id)
             ->where('items.0.id', $priorityItem->id)
+        );
+});
+
+test('dashboard filters bookmarks', function () {
+    $user = User::factory()->create();
+    $feed = Feed::factory()->for($user)->create();
+
+    $bookmarkedItem = FeedItem::factory()->for($feed)->create([
+        'bookmarked_at' => now(),
+    ]);
+
+    FeedItem::factory()->for($feed)->create([
+        'bookmarked_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard', ['filter' => 'bookmarks']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard')
+            ->where('filter', 'bookmarks')
+            ->where('items.0.id', $bookmarkedItem->id)
         );
 });

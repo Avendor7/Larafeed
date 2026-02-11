@@ -25,13 +25,13 @@ const fallbackTitle = computed(() => {
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-neutral-800 bg-neutral-900 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+        class="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >
         <div class="flex min-w-0 items-center gap-3">
-            <SidebarTrigger class="-ml-1 text-neutral-400 hover:text-neutral-100" />
+            <SidebarTrigger class="-ml-1 text-muted-foreground hover:text-foreground" />
             <div class="min-w-0">
                 <slot name="title">
-                    <h1 class="truncate text-lg font-semibold text-neutral-100">
+                    <h1 class="truncate text-lg font-semibold text-foreground">
                         {{ fallbackTitle }}
                     </h1>
                 </slot>

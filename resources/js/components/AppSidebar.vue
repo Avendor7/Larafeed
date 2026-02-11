@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Bookmark, Clock, LayoutGrid, Rss } from 'lucide-vue-next';
+import { Bookmark, Clock, LayoutGrid } from 'lucide-vue-next';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
@@ -9,23 +9,18 @@ import { type NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: 'All stories',
+        href: dashboard({ query: { filter: 'all' } }),
         icon: LayoutGrid,
     },
     {
         title: 'Today',
-        href: `${dashboard().url}#today`,
+        href: dashboard({ query: { filter: 'today' } }),
         icon: Clock,
     },
     {
-        title: 'Feeds',
-        href: `${dashboard().url}#feeds`,
-        icon: Rss,
-    },
-    {
         title: 'Bookmarks',
-        href: `${dashboard().url}#bookmarks`,
+        href: dashboard({ query: { filter: 'bookmarks' } }),
         icon: Bookmark,
     },
 ];
@@ -35,7 +30,7 @@ const mainNavItems: NavItem[] = [
     <Sidebar
         collapsible="icon"
         variant="sidebar"
-        class="border-neutral-800 bg-neutral-950 text-neutral-200"
+        class="border-sidebar-border bg-sidebar text-sidebar-foreground"
     >
         <SidebarHeader>
             <SidebarMenu>

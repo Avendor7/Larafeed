@@ -14,6 +14,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $search = trim((string) $request->string('search'));
+        $filter = $request->string('filter')->lower()->toString();
 
         $feedQuery = Feed::query()
             ->whereBelongsTo($user)
@@ -49,29 +50,16 @@ class DashboardController extends Controller
                         );
                 });
             })
+            ->when($search === '' && $filter === 'today', fn ($query) => $query
+                ->whereNotNull('published_at')
+                ->where('published_at', '>=', now()->startOfDay()))
+            ->when($search === '' && $filter === 'bookmarks', fn ($query) => $query
+                ->whereNotNull('bookmarked_at'))
             ->orderByDesc('published_at')
             ->orderByDesc('created_at');
 
         $items = $itemsQuery
             ->limit(50)
-            ->get()
-            ->map(fn (FeedItem $item): array => [
-                'id' => $item->id,
-                'title' => $item->title,
-                'url' => $item->url,
-                'summary' => $item->summary,
-                'published_at' => $item->published_at?->toIso8601String(),
-                'is_bookmarked' => $item->bookmarked_at !== null,
-                'feed' => [
-                    'id' => $item->feed->id,
-                    'title' => $item->feed->title ?? $item->feed->url,
-                ],
-            ]);
-
-        $todayItems = $itemsQuery
-            ->whereNotNull('published_at')
-            ->where('published_at', '>=', now()->startOfDay())
-            ->limit(6)
             ->get()
             ->map(fn (FeedItem $item): array => [
                 'id' => $item->id,
@@ -108,9 +96,9 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'search' => $search,
+            'filter' => $search !== '' ? 'search' : ($filter ?: 'today'),
             'feeds' => $feeds,
             'items' => $items,
-            'todayItems' => $todayItems,
             'bookmarks' => $bookmarks,
             'stats' => [
                 'total_articles' => (clone $itemStatsQuery)->count(),

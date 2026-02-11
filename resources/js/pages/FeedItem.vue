@@ -57,10 +57,10 @@ const formatDate = (value?: string | null) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <template #header-title>
             <div class="min-w-0">
-                <p class="text-xs uppercase tracking-[0.3em] text-neutral-500">
+                <p class="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                     {{ item.feed.title }}
                 </p>
-                <h1 class="truncate text-lg font-semibold text-neutral-100">
+                <h1 class="truncate text-lg font-semibold text-foreground">
                     {{ item.title ?? 'Untitled story' }}
                 </h1>
             </div>
@@ -69,11 +69,11 @@ const formatDate = (value?: string | null) => {
             <Form v-bind="feedItemBookmark.form({ feedItem: item.id })">
                 <button
                     type="submit"
-                    class="flex h-9 items-center gap-2 rounded-lg border border-neutral-700 px-3 text-sm text-neutral-200 transition hover:border-neutral-600"
+                    class="flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm text-foreground transition hover:border-border/70"
                 >
                     <Bookmark
                         class="h-4 w-4"
-                        :class="item.is_bookmarked ? 'fill-current text-sky-300' : 'text-neutral-400'"
+                        :class="item.is_bookmarked ? 'fill-current text-sky-400' : 'text-muted-foreground'"
                     />
                     <span class="hidden text-sm md:inline">Bookmark</span>
                 </button>
@@ -91,38 +91,38 @@ const formatDate = (value?: string | null) => {
         </template>
 
         <div class="flex flex-1 flex-col gap-6 px-6 py-6">
-            <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+            <div class="rounded-2xl border border-border bg-card/60 p-6">
                 <div class="space-y-2">
                     <Link
                         :href="dashboard()"
-                        class="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 transition hover:text-neutral-100"
+                        class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
                     >
                         <ArrowLeft class="h-4 w-4" />
                         Back to dashboard
                     </Link>
                     <div class="space-y-1">
-                        <h2 class="text-2xl font-semibold text-neutral-100 md:text-3xl">
+                        <h2 class="text-2xl font-semibold text-foreground md:text-3xl">
                             {{ item.title ?? 'Untitled story' }}
                         </h2>
-                        <p v-if="item.published_at" class="text-sm text-neutral-400">
+                        <p v-if="item.published_at" class="text-sm text-muted-foreground">
                             {{ formatDate(item.published_at) }}
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
+            <div class="rounded-2xl border border-border bg-card/60 p-6">
                 <div
                     v-if="item.content"
-                    class="prose prose-invert max-w-none prose-a:text-sky-200 prose-a:no-underline hover:prose-a:text-sky-100"
+                    class="prose max-w-none prose-a:text-sky-600 prose-a:no-underline hover:prose-a:text-sky-500 dark:prose-invert dark:prose-a:text-sky-200 dark:hover:prose-a:text-sky-100"
                     v-html="item.content"
                 ></div>
 
-                <div v-else class="rounded-lg border border-dashed border-neutral-700 p-6">
-                    <p class="text-sm text-neutral-400">
+                <div v-else class="rounded-lg border border-dashed border-border p-6">
+                    <p class="text-sm text-muted-foreground">
                         This feed item does not include full content. Showing the summary instead.
                     </p>
-                    <p v-if="item.summary" class="mt-3 text-base text-neutral-100">
+                    <p v-if="item.summary" class="mt-3 text-base text-foreground">
                         {{ item.summary }}
                     </p>
                 </div>

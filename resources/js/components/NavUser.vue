@@ -28,7 +28,7 @@ const { getInitials } = useInitials();
                 <DropdownMenuTrigger as-child>
                     <SidebarMenuButton
                         size="lg"
-                        class="h-10 w-10 justify-center rounded-lg data-[state=open]:bg-neutral-800 data-[state=open]:text-neutral-100"
+                        class="h-10 w-10 justify-center rounded-lg data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         data-test="sidebar-menu-button"
                     >
                         <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
@@ -37,7 +37,7 @@ const { getInitials } = useInitials();
                                 :src="user.avatar"
                                 :alt="user.name"
                             />
-                            <AvatarFallback class="rounded-lg bg-neutral-800 text-xs font-semibold text-neutral-100">
+                            <AvatarFallback class="rounded-lg bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
                                 {{ getInitials(user.name) }}
                             </AvatarFallback>
                         </Avatar>

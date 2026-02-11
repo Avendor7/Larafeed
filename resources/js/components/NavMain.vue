@@ -19,11 +19,13 @@ const { isCurrentUrl } = useCurrentUrl();
                     as-child
                     :is-active="isCurrentUrl(item.href)"
                     :tooltip="item.title"
-                    class="h-10 w-10 justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-neutral-100 data-[active=true]:bg-neutral-800 data-[active=true]:text-neutral-100"
+                    class="h-10 w-full justify-start gap-3 rounded-lg px-3 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                 >
                     <Link :href="item.href">
                         <component :is="item.icon" />
-                        <span class="sr-only">{{ item.title }}</span>
+                        <span class="truncate group-data-[collapsible=icon]:sr-only">
+                            {{ item.title }}
+                        </span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
