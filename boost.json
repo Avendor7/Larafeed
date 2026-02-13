@@ -7,7 +7,7 @@
         "cursor"
     ],
     "guidelines": true,
-    "herd_mcp": false,
+    "herd_mcp": true,
     "mcp": true,
     "packages": [
         "laravel/fortify"
