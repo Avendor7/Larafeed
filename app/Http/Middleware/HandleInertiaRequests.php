@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Feed;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -40,6 +41,19 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+            ],
+            'navigation' => [
+                'feeds' => fn (): array => $request->user()
+                    ? Feed::query()
+                        ->whereBelongsTo($request->user())
+                        ->latest()
+                        ->get()
+                        ->map(fn (Feed $feed): array => [
+                            'id' => $feed->id,
+                            'title' => $feed->title ?? $feed->url,
+                        ])
+                        ->all()
+                    : [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

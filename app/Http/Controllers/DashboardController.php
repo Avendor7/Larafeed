@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Feed;
 use App\Models\FeedItem;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,21 +12,6 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-
-        $feeds = Feed::query()
-            ->whereBelongsTo($user)
-            ->withCount('items')
-            ->latest()
-            ->get()
-            ->map(fn (Feed $feed): array => [
-                'id' => $feed->id,
-                'title' => $feed->title ?? $feed->url,
-                'url' => $feed->url,
-                'site_url' => $feed->site_url,
-                'description' => $feed->description,
-                'last_fetched_at' => $feed->last_fetched_at?->toIso8601String(),
-                'items_count' => $feed->items_count,
-            ]);
 
         $items = FeedItem::query()
             ->with('feed')
@@ -49,7 +33,6 @@ class DashboardController extends Controller
             ]);
 
         return Inertia::render('Dashboard', [
-            'feeds' => $feeds,
             'items' => $items,
             'status' => $request->session()->get('status'),
         ]);

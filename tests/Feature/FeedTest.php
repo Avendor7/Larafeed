@@ -2,6 +2,7 @@
 
 use App\Jobs\FetchFeedItems;
 use App\Models\Feed;
+use App\Models\FeedItem;
 use App\Models\User;
 use App\Services\RssFeedParser;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -9,6 +10,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -17,6 +19,8 @@ beforeEach(function () {
         VerifyCsrfToken::class,
         ValidateCsrfToken::class,
     ]);
+
+    $this->withoutVite();
 });
 
 it('allows a user to add a feed and queues a refresh', function () {
@@ -28,7 +32,7 @@ it('allows a user to add a feed and queues a refresh', function () {
         'url' => 'https://example.com/rss.xml',
     ]);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('feeds.manage'));
 
     $feed = Feed::query()->where('user_id', $user->id)->firstOrFail();
 
@@ -36,6 +40,26 @@ it('allows a user to add a feed and queues a refresh', function () {
     expect($feed->url_hash)->toBe(hash('sha1', 'https://example.com/rss.xml'));
 
     Bus::assertDispatched(FetchFeedItems::class);
+});
+
+it('shows the new feed on the management page after adding it', function () {
+    Bus::fake();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('feeds.store'), [
+        'url' => 'https://example.com/rss.xml',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('feeds.manage'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('FeedManagement')
+            ->has('feeds', 1)
+            ->where('feeds.0.url', 'https://example.com/rss.xml')
+            ->where('feeds.0.title', 'https://example.com/rss.xml')
+        );
 });
 
 it('prevents duplicate feeds per user', function () {
@@ -90,4 +114,40 @@ XML,
     expect($feed->items()->count())->toBe(1);
     $item = $feed->items()->firstOrFail();
     expect($item->content)->toBe('<p>Full story <strong>content</strong>.</p>');
+});
+
+it('shows feed stories ordered by publish date to the owning user', function () {
+    $user = User::factory()->create();
+    $feed = Feed::factory()->for($user)->create();
+
+    $olderItem = FeedItem::factory()->for($feed)->create([
+        'title' => 'Older item',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $newerItem = FeedItem::factory()->for($feed)->create([
+        'title' => 'Newer item',
+        'published_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('feeds.show', $feed))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Feed')
+            ->where('feed.id', $feed->id)
+            ->has('items', 2)
+            ->where('items.0.id', $newerItem->id)
+            ->where('items.1.id', $olderItem->id)
+        );
+});
+
+it('prevents other users from viewing a feed timeline', function () {
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $feed = Feed::factory()->for($owner)->create();
+
+    $this->actingAs($otherUser)
+        ->get(route('feeds.show', $feed))
+        ->assertForbidden();
 });

@@ -3,7 +3,7 @@
     "laravel-boost": {
       "command": "/usr/bin/php",
       "args": [
-        "/home/stephen/Documents/web/Larafeed/artisan",
+        "/home/stephen/Documents/web/larafeed/artisan",
         "boost:mcp"
       ]
     }

@@ -15,6 +15,8 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('feeds/manage', [FeedController::class, 'manage'])->name('feeds.manage');
+    Route::get('feeds/{feed}', [FeedController::class, 'show'])->name('feeds.show');
     Route::post('feeds', [FeedController::class, 'store'])->name('feeds.store');
     Route::post('feeds/{feed}/refresh', [FeedController::class, 'refresh'])->name('feeds.refresh');
     Route::delete('feeds/{feed}', [FeedController::class, 'destroy'])->name('feeds.destroy');

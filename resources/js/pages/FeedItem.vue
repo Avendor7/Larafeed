@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
+import { show as feedShow } from '@/routes/feeds';
 import { type BreadcrumbItem } from '@/types';
 
 type FeedItemDetail = {
@@ -27,7 +28,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'All Stories',
         href: dashboard().url,
     },
     {
@@ -63,12 +64,15 @@ const formatDate = (value?: string | null) => {
                             class="inline-flex items-center gap-2 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-100"
                         >
                             <ArrowLeft class="h-4 w-4" />
-                            Back to dashboard
+                            Back to all stories
                         </Link>
                         <div class="space-y-1">
-                            <p class="text-xs font-medium uppercase tracking-wide text-fuchsia-300/80">
+                            <Link
+                                :href="feedShow(item.feed.id)"
+                                class="text-xs font-medium uppercase tracking-wide text-fuchsia-300/80 transition-colors hover:text-fuchsia-200"
+                            >
                                 {{ item.feed.title }}
-                            </p>
+                            </Link>
                             <h1 class="text-2xl font-semibold text-neutral-100 md:text-3xl">
                                 {{ item.title ?? 'Untitled story' }}
                             </h1>
