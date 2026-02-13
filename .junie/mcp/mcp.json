@@ -1,11 +1,22 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "/usr/bin/php",
+            "command": "/Users/stephen/Library/Application",
             "args": [
-                "/home/stephen/Documents/web/Larafeed/artisan",
+                "Support/Herd/bin/php84",
+                "/Users/stephen/Documents/GitHub/Larafeed/artisan",
                 "boost:mcp"
             ]
+        },
+        "herd": {
+            "command": "/Users/stephen/Library/Application",
+            "args": [
+                "Support/Herd/bin/php84",
+                "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+            ],
+            "env": {
+                "SITE_PATH": "/Users/stephen/Documents/GitHub/Larafeed"
+            }
         }
     }
 }

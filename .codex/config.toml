@@ -1,4 +1,12 @@
 [mcp_servers.laravel-boost]
 command = "php"
 args = ["artisan", "boost:mcp"]
-cwd = "/home/stephen/Documents/web/Larafeed"
+cwd = "/Users/stephen/Documents/GitHub/Larafeed"
+
+[mcp_servers.herd]
+command = "php"
+args = ["/Applications/Herd.app/Contents/Resources/herd-mcp.phar"]
+cwd = "/Users/stephen/Documents/GitHub/Larafeed"
+
+[mcp_servers.herd.env]
+SITE_PATH = "/Users/stephen/Documents/GitHub/Larafeed"
